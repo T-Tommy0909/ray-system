@@ -1,0 +1,62 @@
+# docker compose for development
+
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=tommy
+      - POSTGRES_PASSWORD=dBZqy5fG90
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  back:
+    build:
+      context: ./backend
+      target: dev-runner
+    image: ray-system-dev-back:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app:delegated
+      - /app/node_modules
+    depends_on:
+      - postgres
+    command: >
+      bash -c 'yarn &&
+      yarn run prisma:generate &&
+      yarn run prisma migrate reset --force &&
+      yarn dev'
+  front:
+    build:
+      context: ./frontend
+      target: deps
+    image: ray-system-dev-front:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app:delegated
+      - /app/node_modules
+    command: >
+      sh -c 'yarn && yarn dev'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+  prisma-studio:
+    build:
+      context: ./backend
+      target: dev
+    environment:
+      - DATABASE_URL=postgresql://tommy:dBZqy5fG90@postgres:5432/mydb?schema=public
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./backend/prisma:/app/prisma:delegated
+    command: "npx prisma studio"
+    depends_on:
+      - postgres
+      - back
+
+volumes:
+  postgres:
