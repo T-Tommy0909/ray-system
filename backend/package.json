@@ -8,6 +8,7 @@
     "fastify": "^4.0.0",
     "fastify-cli": "^5.8.0",
     "fastify-plugin": "^4.0.0",
+    "@fastify/cors": "^8.0.0",
     "prisma": "^4.10.1"
   },
   "description": "This project was bootstrapped with Fastify-CLI.",
